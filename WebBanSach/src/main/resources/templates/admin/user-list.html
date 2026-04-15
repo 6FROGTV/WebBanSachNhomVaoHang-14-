@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout}">
+<head><title>Quản lý Người dùng - Web Bán Sách</title></head>
+<body>
+    <section layout:fragment="content" class="container mt-5 mb-5">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold text-primary brand-font"><i class="bi bi-people-fill me-2"></i>Quản lý Người dùng</h2>
+            <a th:href="@{/admin}" class="btn btn-outline-secondary rounded-pill fw-bold">
+                <i class="bi bi-arrow-left"></i> Quay lại Admin
+            </a>
+        </div>
+
+        <div th:if="${param.success}" class="alert alert-success rounded-pill text-center fw-bold shadow-sm">
+            <i class="bi bi-check-circle-fill me-2"></i> Thao tác thành công!
+        </div>
+
+        <div th:if="${errorMessage}" class="alert alert-danger rounded-pill text-center fw-bold shadow-sm">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> <span th:text="${errorMessage}"></span>
+        </div>
+
+        <div class="card shadow-sm rounded-4 mb-4 border-0">
+            <div class="card-body bg-light rounded-4">
+                <form th:action="@{/admin/users/save}" th:object="${newUser}" method="post" class="row g-3 align-items-end">
+                    <input type="hidden" id="id" th:field="*{id}">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small text-muted">Tên tài khoản (Không trùng)</label>
+                        <input type="text" id="username" th:field="*{username}" class="form-control rounded-3" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small text-muted">Email</label>
+                        <input type="email" id="email" th:field="*{email}" class="form-control rounded-3" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold small text-muted">Mật khẩu</label>
+                        <input type="password" id="password" th:field="*{password}" class="form-control rounded-3">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold small text-muted">Quyền hạn</label>
+                        <select id="role" th:field="*{role}" class="form-select rounded-3">
+                            <option value="USER">USER (Khách)</option>
+                            <option value="ADMIN">ADMIN (Quản trị)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-none">
+                        <input type="number" id="rewardPoints" th:field="*{rewardPoints}" value="0">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100 rounded-3 fw-bold"><i class="bi bi-floppy"></i> Lưu</button>
+                    </div>
+                    <div class="col-12 mt-2">
+                        <button type="button" class="btn btn-sm btn-link text-muted" onclick="resetForm()">+ Làm mới form</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-hover align-middle m-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="ps-4">ID</th>
+                            <th>Tên tài khoản</th>
+                            <th>Email</th>
+                            <th>Vai trò</th>
+                            <th class="text-center pe-4">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="user : ${users}">
+                            <td class="ps-4 fw-bold text-muted" th:text="${user.id}"></td>
+                            <td class="fw-bold text-primary" th:text="${user.username}"></td>
+                            <td th:text="${user.email}"></td>
+                            <td>
+                                <span th:class="${user.role == 'ADMIN'} ? 'badge bg-danger' : 'badge bg-secondary'" th:text="${user.role}"></span>
+                            </td>
+                            <td class="text-center pe-4">
+                                <button type="button" class="btn btn-sm btn-light border fw-bold me-1" 
+                                    th:data-id="${user.id}" th:data-username="${user.username}" th:data-email="${user.email}" 
+                                    th:data-role="${user.role}" th:data-password="${user.password}" th:data-points="${user.rewardPoints}"
+                                    onclick="fillForm(this)">
+                                    <i class="bi bi-pencil-square text-primary"></i> Sửa
+                                </button>
+                                <button type="button" class="btn btn-sm btn-danger fw-bold" th:onclick="'deleteUserApi(' + ${user.id} + ')'">
+                                    <i class="bi bi-trash3-fill"></i> Xóa
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <script>
+            function fillForm(btn) {
+                document.getElementById('id').value = btn.getAttribute('data-id');
+                document.getElementById('username').value = btn.getAttribute('data-username');
+                document.getElementById('email').value = btn.getAttribute('data-email');
+                document.getElementById('role').value = btn.getAttribute('data-role');
+                document.getElementById('password').value = btn.getAttribute('data-password') || '';
+                document.getElementById('rewardPoints').value = btn.getAttribute('data-points') || 0;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            function resetForm() {
+                document.getElementById('id').value = ''; 
+                document.getElementById('username').value = '';
+                document.getElementById('email').value = '';
+                document.getElementById('role').value = 'USER';
+                document.getElementById('password').value = '';
+                document.getElementById('rewardPoints').value = '0';
+            }
+
+            // HÀM XÓA BẰNG API
+            function deleteUserApi(userId) {
+                if(confirm('Xóa tài khoản này thông qua API?')) {
+                    fetch('/api/admin/users/' + userId, { method: 'DELETE' })
+                    .then(response => {
+                        if(response.ok) {
+                            alert('Đã xóa thành công!');
+                            window.location.reload();
+                        }
+                    });
+                }
+            }
+        </script>
+    </section>
+</body>
+</html>

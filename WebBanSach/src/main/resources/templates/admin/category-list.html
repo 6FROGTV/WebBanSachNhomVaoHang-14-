@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout}">
+<head><title>Quản lý Danh mục - Admin</title></head>
+<body>
+    <section layout:fragment="content" class="container mt-4 mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold text-warning m-0"><i class="bi bi-tags"></i> Quản lý Danh mục</h3>
+            <a th:href="@{/admin/categories/add}" class="btn btn-warning fw-bold text-white"><i class="bi bi-plus-circle"></i> Thêm danh mục mới</a>
+        </div>
+        
+        <div th:if="${param.success}" class="alert alert-success">Đã lưu danh mục thành công!</div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <table class="table table-hover table-striped m-0 align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th width="10%">ID</th>
+                            <th>Tên danh mục</th>
+                            <th width="20%" class="text-center">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="cat : ${categories}">
+                            <td th:text="${cat.id}">1</td>
+                            <td class="fw-bold" th:text="${cat.name}">Văn học</td>
+                            <td class="text-center">
+                                <a th:href="@{/admin/categories/edit/{id}(id=${cat.id})}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil-square"></i> Sửa</a>
+                                <button type="button" class="btn btn-sm btn-outline-danger" th:onclick="'deleteCategoryApi(' + ${cat.id} + ')'"><i class="bi bi-trash"></i> Xóa</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <script>
+            function deleteCategoryApi(catId) {
+                if(confirm('Xóa danh mục này bằng API?')) {
+                    fetch('/api/admin/categories/' + catId, { method: 'DELETE' })
+                    .then(response => {
+                        if(response.ok) {
+                            alert('Đã xóa thành công!');
+                            window.location.reload();
+                        }
+                    });
+                }
+            }
+        </script>
+    </section>
+</body>
+</html>

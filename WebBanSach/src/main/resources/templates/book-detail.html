@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout}">
+<head>
+    <title th:text="${book.title} + ' - Web Bán Sách'"></title>
+</head>
+<body>
+    <section layout:fragment="content" class="container mt-5 mb-5">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/}" class="text-decoration-none text-muted"><i class="bi bi-house-door"></i> Trang chủ</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/category/{id}(id=${book.category.id})}" class="text-decoration-none text-muted" th:text="${book.category.name}">Danh mục</a></li>
+                <li class="breadcrumb-item active fw-bold" aria-current="page" th:text="${book.title}">Tên sách</li>
+            </ol>
+        </nav>
+
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="row g-0">
+                <div class="col-md-4 p-4 text-center position-relative" style="background-color: #f8fafc;">
+                    <div th:if="${book.discountPercent > 0}" class="badge bg-danger position-absolute top-0 start-0 m-4 fs-6 rounded-pill" th:text="'-' + ${book.discountPercent} + '%'"></div>
+                    
+                    <img th:src="${book.imageUrl != null and !book.imageUrl.isEmpty() ? book.imageUrl : 'https://via.placeholder.com/400x600?text=Chua+Co+Anh'}" 
+                         class="img-fluid rounded shadow" alt="Bìa sách" style="max-height: 450px; object-fit: cover;">
+                </div>
+                
+                <div class="col-md-8 p-5">
+                    <span class="badge bg-secondary mb-2" th:text="${book.category.name}">Thể loại</span>
+                    <h2 class="brand-font fw-bold text-primary mb-3" th:text="${book.title}">Tựa sách</h2>
+                    
+                    <p class="text-muted mb-4">
+                        Tác giả: <strong class="text-dark" th:text="${book.author}">Tên tác giả</strong> | 
+                        Tình trạng: 
+                        <span th:if="${book.stock > 0}" class="text-success fw-bold"><i class="bi bi-check-circle"></i> Còn hàng (<span th:text="${book.stock}"></span>)</span>
+                        <span th:unless="${book.stock > 0}" class="text-danger fw-bold"><i class="bi bi-x-circle"></i> Hết hàng</span>
+                    </p>
+
+                    <h3 class="fw-bold mb-4" style="color: var(--accent); font-size: 2.2rem;">
+                        <span th:text="${#numbers.formatDecimal(book.getSalePrice(), 0, 'COMMA', 0, 'POINT')} + ' ₫'">Giá Sale</span>
+                        <span th:if="${book.discountPercent > 0}" class="text-muted text-decoration-line-through ms-3 fw-normal" style="font-size: 1.2rem;" th:text="${#numbers.formatDecimal(book.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">Giá gốc</span>
+                    </h3>
+
+                    <div class="mb-4">
+                        <h5 class="fw-bold">Nội dung giới thiệu:</h5>
+                        <p class="text-muted" style="line-height: 1.7;" th:text="${book.description}">Mô tả sách sẽ hiển thị ở đây...</p>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <form th:action="@{/cart/add}" method="post" class="d-flex align-items-center gap-3">
+                        <input type="hidden" name="bookId" th:value="${book.id}">
+                        
+                        <div class="input-group" style="width: 140px;">
+                            <button class="btn btn-outline-secondary px-3" type="button" onclick="this.parentNode.querySelector('input[type=number]').stepDown()">-</button>
+                            <input type="number" class="form-control text-center" name="quantity" value="1" min="1" th:max="${book.stock}" required>
+                            <button class="btn btn-outline-secondary px-3" type="button" onclick="this.parentNode.querySelector('input[type=number]').stepUp()">+</button>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-lg px-5 fw-bold text-white shadow" style="background: var(--accent); border-radius: 8px;" th:disabled="${book.stock == 0}">
+                            <i class="bi bi-cart-plus"></i> THÊM VÀO GIỎ
+                        </button>
+                    </form>
+                    
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

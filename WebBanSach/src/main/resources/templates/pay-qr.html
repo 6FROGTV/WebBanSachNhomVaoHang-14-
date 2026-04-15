@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout}">
+<head><title>Quét mã thanh toán - Web Bán Sách</title></head>
+<body>
+    <section layout:fragment="content" class="container mt-5 mb-5 d-flex justify-content-center">
+        <div class="card border-0 shadow-lg p-4 rounded-4" style="max-width: 700px; width: 100%;">
+            
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                <div>
+                    <h3 class="fw-bold m-0 text-primary" th:text="'Thanh toán đơn ORD-' + ${order.id}"></h3>
+                    <div class="text-muted mt-2">
+                        Phương thức: <strong class="text-dark" th:text="${order.paymentMethod == 'MOMO' ? 'VietQR MoMo' : 'VietQR Ngân hàng MB Bank'}"></strong>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <div class="fw-bold text-danger fs-4" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-6 border-end text-center">
+                    <h5 class="fw-bold mb-3">Quét QR để thanh toán</h5>
+                    
+                    <div class="rounded-4 d-flex justify-content-center align-items-center p-2 mx-auto" style="border: 2px dashed #cbd5e1; width: 240px; height: 240px;">
+                        
+                        <img th:if="${order.paymentMethod == 'MOMO'}" 
+                             th:src="@{'https://img.vietqr.io/image/momo-0898539476-compact2.png?amount=' + ${#numbers.formatInteger(order.totalAmount, 0)} + '&addInfo=Thanh%20toan%20MOMO%20ORD-' + ${order.id} + '&accountName=BUI%20ANH%20HUY'}"
+                             onerror="this.onerror=null; this.src='/images/momoqr.jpg';"
+                             alt="Mã QR Momo" class="img-fluid" style="max-height: 100%; object-fit: contain;">
+
+                        <img th:if="${order.paymentMethod == 'MBBANK'}" 
+                             th:src="@{'https://img.vietqr.io/image/mbbank-0898539476-compact2.png?amount=' + ${#numbers.formatInteger(order.totalAmount, 0)} + '&addInfo=Thanh%20toan%20MBBANK%20ORD-' + ${order.id} + '&accountName=BUI%20ANH%20HUY'}"
+                             onerror="this.onerror=null; this.src='/images/vikkiqr.jpg';"
+                             alt="Mã QR MBBank" class="img-fluid" style="max-height: 100%; object-fit: contain;">
+                             
+                    </div>
+                    
+                    <p class="text-muted small mt-3">Sử dụng App Ngân hàng hoặc MoMo để quét mã.</p>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="bg-light p-3 rounded-3 small text-muted mb-4">
+                        Hệ thống sẽ tự động điền thông tin:<br>
+                        - STK nhận: <strong class="text-dark">0898539476</strong><br>
+                        - Chủ TK: <strong class="text-dark">BUI ANH HUY</strong><br>
+                        - Số tiền: <strong class="text-danger" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></strong><br>
+                        - Lời nhắn: <strong class="bg-warning text-dark px-1 rounded" th:text="'Thanh toan ' + ${order.paymentMethod} + ' ORD-' + ${order.id}"></strong>
+                    </div>
+
+                    <div class="d-flex flex-column gap-2">
+                        <a th:href="@{/checkout/confirm-pay(id=${order.id})}" id="btnConfirmPay" class="btn btn-success fw-bold py-2 shadow-sm">
+                            <i class="bi bi-check-circle"></i> TÔI ĐÃ THANH TOÁN
+                        </a>
+                        <p class="text-center text-muted small mt-2">
+                            Hệ thống sẽ tự động chuyển trang sau <strong id="countdown" class="text-danger">35</strong> giây.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script layout:fragment="script" th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", function() {
+            var timeLeft = 35;
+            var countdownEl = document.getElementById('countdown');
+            var btnConfirm = document.getElementById('btnConfirmPay');
+            
+            var timer = setInterval(function() {
+                timeLeft--;
+                countdownEl.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    window.location.href = btnConfirm.getAttribute('href'); 
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"> 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Bán Sách - Tri thức vươn xa</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary:rgb(35, 82, 104); /* Đổi màu xanh cho giống React */
+            --accent: #f97316;  
+            --bg-body: #f8fafc;
+        }
+        body { font-family: 'Nunito', sans-serif; background-color: var(--bg-body); display: flex; flex-direction: column; min-height: 100vh; }
+        h1, h2, h3, h4, h5, .brand-font { font-family: 'Playfair Display', serif; }
+        
+        /* Navbar */
+        .navbar-custom { background-color: #ffffff; box-shadow: 0 2px 15px rgba(0,0,0,0.05); padding: 12px 0; }
+        .navbar-brand { color: var(--primary) !important; font-weight: 700; font-size: 28px; }
+        .navbar-brand i { color: var(--accent); }
+        .search-box { border: 2px solid #e2e8f0; border-radius: 50px; overflow: hidden; display: flex; transition: all 0.3s; }
+        .search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1); }
+        .search-box input { border: none; outline: none; padding: 10px 20px; width: 100%; box-shadow: none !important; }
+        .search-box button { background: var(--accent); border: none; color: white; padding: 0 25px; transition: 0.3s; }
+        .search-box button:hover { background: #ea580c; }
+        
+        .nav-action { color: #1e293b; text-decoration: none; font-weight: 600; margin-left: 20px; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .nav-action:hover { color: var(--accent); }
+        .nav-action i { font-size: 22px; }
+        
+        /* Menu Ngang Tự Động */
+        .category-bar { background: var(--primary); }
+        .category-bar a { color: #e0f2fe; text-decoration: none; font-weight: 600; font-size: 15px; padding: 12px 0; text-transform: uppercase; letter-spacing: 0.5px; transition: 0.3s; }
+        .category-bar a:hover { color: #ffffff; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+        
+        /* 🔥 CSS CHUẨN CHO FOOTER MỚI 🔥 */
+        footer { margin-top: auto; } /* Ép footer luôn nằm dưới cùng */
+        .transition-hover:hover { transform: translateY(-3px); }
+        .transition-all { transition: all 0.3s ease; }
+        .social-icons a, .policy-links li { transition: all 0.2s ease-in-out; }
+        .social-icons a:hover { opacity: 0.8; transform: scale(1.1); }
+        .policy-links a:hover { text-decoration: underline !important; color: var(--primary) !important; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+        <div class="container d-flex align-items-center">
+            <a class="navbar-brand brand-font" th:href="@{/}">
+                <i class="bi bi-book-half"></i> Web Bán<span style="color:#1e293b">Sách</span>
+            </a>
+
+            <div class="mx-auto w-50 d-none d-lg-block px-4">
+                <form class="search-box" th:action="@{/search}" method="GET">
+                    <input type="text" name="keyword" placeholder="Tìm kiếm sách, tác giả, nhà xuất bản...">
+                    <button type="submit"><i class="bi bi-search"></i></button>
+                </form>
+            </div>
+
+            <div class="d-flex align-items-center">
+                <th:block sec:authorize="isAuthenticated()">
+                    <span class="nav-action text-muted" style="cursor:default">
+                        <i class="bi bi-person-circle"></i> Chào, <span sec:authentication="name"></span>
+                    </span>
+                    
+                    <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin}" class="nav-action text-danger">
+                        <i class="bi bi-shield-lock-fill"></i> Quản trị
+                    </a>
+                    
+                    <a th:href="@{/cart}" class="nav-action position-relative">
+                        <i class="bi bi-bag-heart"></i> Giỏ hàng
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
+                              style="font-size: 10px;" 
+                              th:text="${session.cartCount != null ? session.cartCount : 0}">0</span>
+                    </a>
+                    <form th:action="@{/logout}" method="post" class="d-inline ms-3 mb-0">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-bold">Thoát</button>
+                    </form>
+                </th:block>
+
+                <th:block sec:authorize="isAnonymous()">
+                    <a th:href="@{/login}" class="btn btn-outline-primary rounded-pill px-4 fw-bold ms-3">Đăng nhập</a>
+                    <a th:href="@{/register}" class="btn btn-primary rounded-pill px-4 fw-bold ms-2" style="background:var(--accent); border:none;">Đăng ký</a>
+                </th:block>
+            </div>
+        </div>
+    </nav>
+
+    <div class="category-bar shadow-sm mb-4 d-none d-md-block">
+        <div class="container">
+            <div class="d-flex flex-wrap justify-content-center gap-4">
+                <a th:href="@{/}"><i class="bi bi-grid-fill me-1"></i> Tất cả sách</a>
+                <a th:each="cat : ${categories}" 
+                   th:href="@{/category/{id}(id=${cat.id})}" 
+                   th:text="${cat.name}">Tên Danh Mục</a>
+            </div>
+        </div>
+    </div>
+
+    <main layout:fragment="content">
+    </main>
+
+    <footer class="bg-white pt-5 pb-4 mt-5 border-top animation-fade-in">
+      <div class="container">
+        <div class="row g-4">
+          <div class="col-md-4">
+            <h5 class="fw-bold text-primary mb-4 brand-font">
+              <i class="bi bi-book-half me-2"></i>Web Bán Sách
+            </h5>
+            <p class="text-muted small d-flex align-items-start">
+              <i class="bi bi-geo-alt-fill me-2 text-primary mt-1"></i> 
+              36 đường Tân Chánh Hiệp 34, phường Trung Mỹ Tây, TP.HCM
+            </p>
+            <p class="text-muted small">
+              <i class="bi bi-telephone-fill me-2 text-primary"></i> 
+              1900 1836 (7:00 - 22:00)
+            </p>
+            <p class="text-muted small">
+              <i class="bi bi-envelope-fill me-2 text-primary"></i> 
+              anhhuybui672@gmail.com
+            </p>
+          </div>
+
+          <div class="col-md-4 ps-md-5">
+            <h5 class="fw-bold mb-4 text-dark brand-font">Điều khoản và chính sách</h5>
+            <ul class="list-unstyled text-muted small policy-links">
+              <li class="mb-3 transition-hover">
+                <a th:href="@{/policy/shipping}" class="text-decoration-none text-muted d-flex align-items-center">
+                  <i class="bi bi-truck me-3 text-secondary"></i> Chính sách giao hàng
+                </a>
+              </li>
+              <li class="mb-3 transition-hover">
+                <a th:href="@{/policy/privacy}" class="text-decoration-none text-muted d-flex align-items-center">
+                  <i class="bi bi-shield-lock me-3 text-secondary"></i> Chính sách bảo mật
+                </a>
+              </li>
+              <li class="mb-3 transition-hover">
+                <a th:href="@{/policy/warranty}" class="text-decoration-none text-muted d-flex align-items-center">
+                  <i class="bi bi-arrow-left-right me-3 text-secondary"></i> Bảo hành & đổi trả
+                </a>
+              </li>
+              <li class="mb-3 transition-hover">
+                <a th:href="@{/policy/payment}" class="text-decoration-none text-muted d-flex align-items-center">
+                  <i class="bi bi-credit-card me-3 text-secondary"></i> Chính sách thanh toán
+                </a>
+              </li>
+              <li class="mb-3 transition-hover">
+                <a th:href="@{/policy/terms}" class="text-decoration-none text-muted d-flex align-items-center">
+                  <i class="bi bi-person-check me-3 text-secondary"></i> Điều kiện & thành viên
+                </a>
+              </li>
+              <li class="mb-3 transition-hover">
+                <a th:href="@{/policy/installment}" class="text-decoration-none text-muted d-flex align-items-center">
+                  <i class="bi bi-percent me-3 text-secondary"></i> Chính sách trả góp 0%
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div class="col-md-4 text-center text-md-start">
+            <h5 class="fw-bold mb-4 text-dark brand-font">Hệ thống cửa hàng</h5>
+            
+            <img 
+              th:src="@{/images/bookstore.png}" 
+              class="img-fluid rounded-4 shadow-sm mb-3 border" 
+              alt="Hệ thống Web Bán Sách" 
+              style="max-height: 150px; object-fit: cover; width: 100%;" 
+            />
+
+            <div class="d-flex justify-content-center justify-content-md-start gap-3 mt-2 social-icons">
+              <a href="https://www.facebook.com/EchTV2k4" class="text-primary fs-4 transition-hover"><i class="bi bi-facebook"></i></a>
+              <a href="https://www.youtube.com/@huyanh4228" class="text-danger fs-4 transition-hover"><i class="bi bi-youtube"></i></a>
+              <a href="https://www.tiktok.com/@echtv204" class="text-info fs-4 transition-hover"><i class="bi bi-tiktok"></i></a>
+              <a href="https://www.instagram.com/echtv204/" class="text-warning fs-4 transition-hover"><i class="bi bi-instagram"></i></a>
+            </div>
+          </div>
+        </div>
+
+        <hr class="my-4 border-secondary opacity-25" />
+        
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 pt-2 pb-2">
+          <p class="text-muted small mb-0">© <strong>2026 Web Bán Sách - Nhóm 14</strong>. All rights reserved.</p>
+          <div class="payment-icons d-flex align-items-center gap-3 bg-light p-2 rounded-pill px-3 border shadow-sm">
+             <span class="small text-muted me-1">Hỗ trợ:</span>
+             <img src="https://tse4.mm.bing.net/th/id/OIP.-DhgkiQDEdoru7CJdZrwEAHaHa?rs=1&pid=ImgDetMain&o=7&rm=3" alt="Momo" height="22" />
+             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/1280px-Mastercard-logo.svg.png" alt="Mastercard" height="18" />
+             <img src="https://tse1.mm.bing.net/th/id/OIP.mNBtUjnwgmURuGtPeyptwgHaEp?rs=1&pid=ImgDetMain&o=7&rm=3" alt="Visa" height="13" />
+             <img src="https://tse2.mm.bing.net/th/id/OIP.pn3RUm1xk1HiAxWIgC6CIwHaHa?rs=1&pid=ImgDetMain&o=7&rm=3" alt="VNPay" height="18" />
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-4" style="z-index: 10000;">
+        <div id="cartToast" class="toast align-items-center text-bg-success border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body fw-bold fs-6">
+                    <i class="bi bi-check-circle-fill me-2"></i> <span th:text="${message}">Đã thêm vào giỏ hàng!</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script th:if="${message != null}">
+        document.addEventListener("DOMContentLoaded", function() {
+            var toastEl = document.getElementById('cartToast');
+            var toast = new bootstrap.Toast(toastEl, { delay: 3500 });
+            toast.show();
+        });
+    </script>
+</body>
+</html>

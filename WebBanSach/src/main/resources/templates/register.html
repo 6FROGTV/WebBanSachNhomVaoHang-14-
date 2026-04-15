@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout}">
+<head><title>Đăng ký - Web Bán Sách</title></head>
+<body>
+    <section layout:fragment="content" class="container d-flex justify-content-center align-items-center" style="min-height: 70vh; margin: 40px 0;">
+        <div class="card border-0 shadow-lg" style="width: 450px; border-radius: 20px; overflow: hidden;">
+            <div class="card-header bg-white text-center pt-5 pb-2 border-0">
+                <h2 class="brand-font fw-bold" style="color: var(--primary);">Tạo Tài Khoản</h2>
+                <p class="text-muted">Bắt đầu hành trình tri thức mới</p>
+            </div>
+            <div class="card-body p-5 pt-3">
+                
+                <div th:if="${error}" class="alert alert-danger text-center rounded-pill py-2" th:text="${error}"></div>
+                
+                <form th:action="@{/register}" th:object="${user}" method="post">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-muted small">TÊN ĐĂNG NHẬP</label>
+                        <input type="text" class="form-control form-control-lg bg-light border-0" th:field="*{username}" placeholder="Viết liền không dấu" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-muted small">EMAIL</label>
+                        <input type="email" class="form-control form-control-lg bg-light border-0" th:field="*{email}" placeholder="Email của bạn" required>
+                    </div>
+                    <div class="mb-5">
+                        <label class="form-label fw-bold text-muted small">MẬT KHẨU</label>
+                        <input type="password" class="form-control form-control-lg bg-light border-0" th:field="*{password}" placeholder="Tối thiểu 6 ký tự" required minlength="6">
+                    </div>
+                    <button type="submit" class="btn btn-lg w-100 fw-bold text-white shadow-sm" style="background:var(--primary); border-radius: 12px;">ĐĂNG KÝ NGAY</button>
+                </form>
+
+                <div class="text-center my-3 text-muted position-relative">
+                    <hr>
+                    <span class="bg-white px-2 position-absolute top-50 start-50 translate-middle small">HOẶC</span>
+                </div>
+                
+                <a th:href="@{/oauth2/authorization/google}" class="btn btn-lg w-100 fw-bold bg-white text-dark shadow-sm border mb-2" style="border-radius: 12px;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width: 20px; margin-right: 8px;"> 
+                    Đăng ký nhanh bằng Google
+                </a>
+                
+                <div class="text-center mt-4">
+                    <span class="text-muted">Đã có tài khoản?</span> <a th:href="@{/login}" class="text-decoration-none fw-bold" style="color:var(--primary)">Đăng nhập</a>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

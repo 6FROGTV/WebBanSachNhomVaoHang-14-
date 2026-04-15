@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout}">
+<head><title>Quản lý Sách - Admin</title></head>
+<body>
+    <section layout:fragment="content" class="container mt-4 mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold text-primary m-0"><i class="bi bi-journal-album"></i> Quản lý Sách</h3>
+            <a th:href="@{/admin/books/add}" class="btn btn-primary fw-bold"><i class="bi bi-plus-circle"></i> Thêm sách mới</a>
+        </div>
+        
+        <div th:if="${param.success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill"></i> Đã lưu thông tin sách thành công!
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-hover align-middle m-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Ảnh</th>
+                            <th width="30%">Tựa sách</th>
+                            <th>Danh mục</th>
+                            <th>Giá bán</th>
+                            <th>Tồn kho</th>
+                            <th class="text-center">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="book : ${books}">
+                            <td><img th:src="${book.imageUrl}" style="width: 50px; height: 70px; object-fit: cover;" class="rounded border"></td>
+                            <td>
+                                <strong th:text="${book.title}">Tên Sách</strong><br>
+                                <small class="text-muted" th:text="${book.author}">Tác giả</small>
+                            </td>
+                            <td><span class="badge bg-secondary" th:text="${book.category != null ? book.category.name : 'Chưa có'}">Danh mục</span></td>
+                            <td>
+                                <span class="text-muted text-decoration-line-through d-block" style="font-size: 12px;" th:text="${#numbers.formatDecimal(book.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></span>
+                                <span class="fw-bold text-danger" th:text="${#numbers.formatDecimal(book.price - (book.price * book.discountPercent / 100), 0, 'COMMA', 0, 'POINT')} + ' ₫'"></span>
+                            </td>
+                            <td><span class="badge bg-success" th:text="${book.stock} + ' cuốn'">150 cuốn</span></td>
+                            <td class="text-center">
+                                <a th:href="@{/admin/books/edit/{id}(id=${book.id})}" class="btn btn-sm btn-outline-primary" title="Sửa">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-danger" th:onclick="'deleteBookApi(' + ${book.id} + ')'" title="Xóa">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(books)}">
+                            <td colspan="6" class="text-center text-muted py-4">Chưa có cuốn sách nào. Hãy thêm sách mới!</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <script>
+            function deleteBookApi(bookId) {
+                if(confirm('Bạn có chắc chắn muốn xóa sách này thông qua API không?')) {
+                    fetch('/api/admin/books/' + bookId, { method: 'DELETE' })
+                    .then(response => {
+                        if(response.ok) {
+                            alert('Xóa thành công! (Mở F12 Network để kiểm tra API)');
+                            window.location.reload();
+                        } else {
+                            alert('Lỗi khi xóa!');
+                        }
+                    }).catch(error => console.error('Lỗi API:', error));
+                }
+            }
+        </script>
+    </section>
+</body>
+</html>
